@@ -1,26 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-/**
- * SelectorBar Component
- * ---------------------------------
- * Purpose: let users pick a Version, Book, and Chapter, with an optional quick-jump box.
- * - Fully controlled via `value` + `onChange`.
- * - Computes chapter list from the selected book's `chapters` count.
- * - Quick Jump accepts inputs like: "John 3", "Jn 3", "Ps 23".
- * - Keyboard: Ctrl/Cmd + K focuses Quick Jump.
- *
- * Tailwind: ships with a clean, compact layout that wraps nicely on mobile.
- */
-
 export type Book = {
   id: string;          // unique key (e.g., "GEN", "EXO")
   name: string;        // display name (e.g., "Genesis")
-  chapters: number;    // number of chapters
   abbr?: string;       // optional short label (e.g., "Gen")
 };
 
+export type Version = { id: string; label: string };
+
 export type ReferenceValue = {
-  versionId: string;
   bookId: string;
   chapter: number;
 };
@@ -30,35 +18,53 @@ export type SelectorBarProps = {
   value: ReferenceValue;
   onChange: (val: ReferenceValue) => void;
   /**
+   * Return an ordered array of available chapter numbers for a given book id.
+   * Example with fetch(bible): get_chapters(bookId)
+   */
+  getChapterNumbers: (bookId: string) => number[];
+  /**
    * Optional callback when user presses Enter in Quick Jump or clicks Go.
    * If not provided, we'll still call onChange when we can resolve a ref.
    */
   onJump?: (val: ReferenceValue) => void;
+  /**
+   * Hide the Version <select>. Useful for single-version apps.
+   */
+  showVersion?: boolean;
   className?: string;
+  resolveBookId?: (input: string) => string | null;
 };
 
 export default function SelectorBar({
   books,
   value,
   onChange,
+  getChapterNumbers,
   onJump,
   className = "",
 }: SelectorBarProps) {
   const [quick, setQuick] = useState("");
   const quickRef = useRef<HTMLInputElement | null>(null);
 
-  const currentBook = useMemo(() => books.find(b => b.id === value.bookId) || null, [books, value.bookId]);
+  const currentBook = useMemo(
+    () => books.find(b => b.id === value.bookId) || null,
+    [books, value.bookId]
+  );
 
-  const chapters = useMemo(() => {
-    const n = currentBook?.chapters ?? 0;
-    return Array.from({ length: n }, (_, i) => i + 1);
-  }, [currentBook]);
+  const chapterNumbers = useMemo(() => {
+    if (!value.bookId) return [];
+    try {
+      return getChapterNumbers(value.bookId) ?? [];
+    } catch {
+      return [];
+    }
+  }, [getChapterNumbers, value.bookId]);
 
   // Keyboard shortcut: Ctrl/Cmd + K to focus quick jump
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const cmdOrCtrl = e.metaKey || e.ctrlKey;
-      if (cmdOrCtrl && (e.key.toLowerCase() === "k")) {
+      if (cmdOrCtrl && e.key.toLowerCase() === "k") {
         e.preventDefault();
         quickRef.current?.focus();
       }
@@ -67,14 +73,10 @@ export default function SelectorBar({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Handle cascading changes
-  const handleVersion = (id: string) => {
-    onChange({ ...value, versionId: id });
-  };
-
   const handleBook = (id: string) => {
-    const b = books.find(x => x.id === id);
-    const nextChapter = clamp(1, 1, b?.chapters ?? 1);
+    // choose the lowest available chapter for the new book
+    const numbers = (id ? getChapterNumbers(id) : []) ?? [];
+    const nextChapter = numbers.length ? Math.min(...numbers) : 1;
     onChange({ ...value, bookId: id, chapter: nextChapter });
   };
 
@@ -82,23 +84,49 @@ export default function SelectorBar({
     onChange({ ...value, chapter: ch });
   };
 
-  // Quick jump parser: "John 3", "Jn 3", "ps23"
+  // Build a quick exact-match index and add synonyms only for John
+const exactIndex = useMemo(() => {
+  const m = new Map<string, Book>();
+  for (const b of books) {
+    m.set(b.name.toLowerCase(), b);
+    if (b.abbr) m.set(b.abbr.toLowerCase(), b);
+  }
+  // Add friendly aliases for John if present
+  const john = books.find(b => b.name.toLowerCase() === "john");
+  if (john) {
+    m.set("jn", john);
+    m.set("jhn", john);
+  }
+  return m;
+}, [books]);
+
+
+  // Quick jump parser without regex: "John 3", "Jn 3", "ps23"
   const tryParseQuick = (raw: string): ReferenceValue | null => {
-    const text = raw.trim().replace(/\s+/g, " ");
+    let text = raw.trim();
     if (!text) return null;
 
-    // Separate trailing numbers as chapter
-    const match = text.match(/^(.*?)[\s\.]*(\d+)$/i);
-    if (!match) return null;
+    // Collapse whitespace (compat-friendly)
+    text = text.replace(/\s+/g, ' ');
 
-    const bookPart = match[1].trim().toLowerCase();
-    const chapterPart = parseInt(match[2], 10);
+    // Find trailing number (chapter)
+    let end = text.length - 1;
+    while (end >= 0 && text[end] === ' ') end--;
+    if (end < 0) return null;
+
+    let startNum = end;
+    while (startNum >= 0 && text[startNum] >= '0' && text[startNum] <= '9') startNum--;
+    if (startNum === end) return null; // no trailing digits
+
+    const chapterStr = text.slice(startNum + 1, end + 1);
+    const chapterPart = parseInt(chapterStr, 10);
     if (!Number.isFinite(chapterPart)) return null;
 
+    const bookPart = text.slice(0, startNum + 1).trim().toLowerCase();
+    if (!bookPart) return null;
+
     // Find book by name or abbr (case-insensitive, startsWith match first, then includes)
-    let found: Book | undefined = books.find(b =>
-      b.name.toLowerCase() === bookPart || (b.abbr && b.abbr.toLowerCase() === bookPart)
-    );
+    let found: Book | undefined = exactIndex.get(bookPart);
 
     if (!found) {
       const starts = books.find(b =>
@@ -114,8 +142,10 @@ export default function SelectorBar({
     }
     if (!found) return null;
 
-    const chapter = clamp(chapterPart, 1, found.chapters);
-    return { versionId: value.versionId, bookId: found.id, chapter };
+    const available = getChapterNumbers(found.id) ?? [];
+    const safeChapter = available.length ? clamp(chapterPart, Math.min(...available), Math.max(...available)) : 1;
+
+    return { bookId: found.id, chapter: safeChapter };
   };
 
   const doJump = () => {
@@ -123,19 +153,20 @@ export default function SelectorBar({
     if (parsed) {
       onChange(parsed);
       onJump?.(parsed);
+      setQuick("");
+      quickRef.current?.blur();
     }
   };
 
   return (
-    <div className={"w-full bg-white/60 dark:bg-slate-900/60 backdrop-blur supports-[backdrop-filter]:bg-white/40 border-y border-slate-200 dark:border-slate-800 " + className}>
-      <div className="mx-auto max-w-6xl px-3 py-2 sm:px-4">
+    <div className={"w-full bg-white/60 dark:bg-slate-900/60 backdrop-blur supports-[backdrop-filter]:bg-white/40 border-y border-slate-200 dark:border-slate-800 " + className} id="selector">
+      <div className="mx-auto max-w-4xl px-3 py-2 sm:px-4">
         <div className="flex flex-wrap items-center gap-2">
-
           {/* Book */}
           <label className="sr-only" htmlFor="sel-book">Book</label>
           <select
             id="sel-book"
-            className="min-w-[8rem] flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:ring-2 focus:ring-sky-400 dark:bg-slate-900 dark:border-slate-700"
+            className="min-w-[10rem] flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:ring-2 focus:ring-sky-400 dark:bg-slate-900 dark:border-slate-700"
             value={value.bookId}
             onChange={e => handleBook(e.target.value)}
           >
@@ -151,9 +182,9 @@ export default function SelectorBar({
             className="w-[7.5rem] rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:ring-2 focus:ring-sky-400 dark:bg-slate-900 dark:border-slate-700"
             value={value.chapter}
             onChange={e => handleChapter(parseInt(e.target.value, 10))}
-            disabled={!currentBook}
+            disabled={!currentBook || chapterNumbers.length === 0}
           >
-            {chapters.map(ch => (
+            {chapterNumbers.map(ch => (
               <option key={ch} value={ch}>Chapter {ch}</option>
             ))}
           </select>
@@ -167,21 +198,25 @@ export default function SelectorBar({
                 ref={quickRef}
                 type="text"
                 inputMode="text"
-                placeholder="Quick jump… e.g., Jn 3"
+                placeholder="Quick jump... e.g., Jn 3"
                 className="w-44 sm:w-56 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:ring-2 focus:ring-sky-400 dark:bg-slate-900 dark:border-slate-700"
                 value={quick}
                 onChange={e => setQuick(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter") doJump(); }}
+                onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    doJump();
+                  }
+                }}
                 aria-describedby="quick-hint"
               />
-              <div id="quick-hint" className="pointer-events-none absolute -bottom-5 left-1 text-[10px] text-slate-500 select-none">
-                Press ⌘/Ctrl + K
-              </div>
             </div>
             <button
               type="button"
               onClick={doJump}
-              className="rounded-xl bg-sky-600 px-3 py-2 text-sm font-medium text-white shadow hover:bg-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 disabled:opacity-50"
+              className="rounded-xl bg-primary-400 hover:bg-primary-500 px-3 py-2 text-sm font-medium text-white shadow hover:bg-primary-500 transition-colors duration-200
+             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40
+             disabled:opacity-50 cursor-pointer"
             >Go</button>
           </div>
         </div>
@@ -193,43 +228,4 @@ export default function SelectorBar({
 // Utils
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
-}
-
-/**
- * Example usage
- * ---------------------------------
- * Drop this in your AppShell or page to wire it up.
- * Replace the `books` array with your real data source.
- */
-export function SelectorBarDemo() {
-  const books: Book[] = [
-    { id: "GEN", name: "Genesis", chapters: 50, abbr: "Gen" },
-    { id: "EXO", name: "Exodus", chapters: 40, abbr: "Ex" },
-    { id: "LEV", name: "Leviticus", chapters: 27, abbr: "Lev" },
-    { id: "PSA", name: "Psalms", chapters: 150, abbr: "Ps" },
-    { id: "JOH", name: "John", chapters: 21, abbr: "Jn" },
-    { id: "ROM", name: "Romans", chapters: 16, abbr: "Rom" },
-  ];
-
-  const [ref, setRef] = useState<ReferenceValue>({ versionId: "ESV", bookId: "JOH", chapter: 3 });
-
-  useEffect(() => {
-    // Example: inform router / content loader here
-    // loadContent(ref)
-    console.log("Ref changed:", ref);
-  }, [ref]);
-
-  return (
-    <div className="border-b border-slate-200 dark:border-slate-800">
-      <SelectorBar
-        books={books}
-        value={ref}
-        onChange={setRef}
-        onJump={(v) => console.log("Jump to:", v)}
-      />
-      <div className="p-4 text-sm text-slate-600 dark:text-slate-300">
-        Current: {ref.versionId} – {books.find(b=>b.id===ref.bookId)?.name} {ref.chapter}
-      </div>
-    </div>
-  );
 }

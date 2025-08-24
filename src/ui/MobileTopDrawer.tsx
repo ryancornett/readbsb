@@ -25,7 +25,7 @@ export default function MobileTopDrawer({ open, onClose, children }: MobileTopDr
       >
         <div className="flex items-center justify-between p-3">
           <div className="flex items-center gap-2">
-            <img src="/icons/icon-192.png" className="h-6 w-6 rounded" alt="" />
+            <img src="img/ReadBSBlogo.png" className="h-6 w-6 rounded" alt="" />
             <span className="font-sans text-base font-semibold">ReadBSB</span>
           </div>
           <button

@@ -4,3 +4,76 @@
 @tailwind utilities;
 
 html, body, #root { height: 100%; }
+
+:root {
+    --light-prime: #2a6ec7;
+    --light-hover: #2061bd;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary-400: var(--light-prime);
+  --color-primary-500: var(--light-hover);
+}
+
+@layer base {
+  :root { color-scheme: light; }
+  .dark { color-scheme: dark; }
+  /* Dark overrides */
+  .dark {
+    --color-primary-400: #0f3777; /* a touch brighter on dark */
+    --color-primary-500: #143366;
+  }
+}
+
+.fetch-bible.custom { line-height: 1.7; font-size: 1.05rem; }
+.fetch-bible.custom p { margin: .5rem 0; }
+.fb-m sup { font-size: .75em; opacity: .75; padding-right: .15rem; }
+
+.fetch-bible.custom .fb-chapter .fb-m .fb-note span {
+    background-color: #333;
+}
+
+.fb-note {
+    opacity: 1 !important;
+}
+
+.fb-fr, .fb-ft {
+    z-index: 10000;
+    opacity: 1 !important;
+    padding: 0.25rem;
+    background-color: #333;
+    color: #fefff3;
+}
+
+.custom.text-size-xs .fb-chapter {
+    font-size: 0.85rem;
+}
+.custom.text-size-sm .fb-chapter {
+    font-size: 0.95rem;
+}
+.custom.text-size-base .fb-chapter {
+    font-size: 1.1rem;
+}
+.custom.text-size-lg .fb-chapter {
+    font-size: 1.35rem;
+}
+.custom.text-size-xl .fb-chapter {
+    font-size: 1.75rem;
+}
+.custom.text-size-xxl .fb-chapter {
+    font-size: 2.25rem;
+}
+
+/* When notes are off, hide fetch.bible note markers anywhere inside the reader */
+html.notes-off .fetch-bible .fb-note {
+  display: none !important;
+}
+
+/* If your notes sometimes use a <sup> or data attribute, hide those too */
+html.notes-off .fetch-bible sup[data-note],
+html.notes-off .fetch-bible [data-footnote] {
+  display: none !important;
+}
+
