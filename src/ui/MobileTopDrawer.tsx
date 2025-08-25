@@ -1,4 +1,5 @@
 import React from "react";
+import SlIcon from "@shoelace-style/shoelace/dist/react/icon/index.js";
 
 type MobileTopDrawerProps = {
   open: boolean;
@@ -34,7 +35,7 @@ export default function MobileTopDrawer({ open, onClose, children }: MobileTopDr
             aria-label="Close"
             title="Close"
           >
-            <sl-icon name="x-lg"></sl-icon>
+            <SlIcon name="x-lg" />
           </button>
         </div>
         <div className="p-3">{children ?? <div className="opacity-70 text-sm">Menu content…</div>}</div>

@@ -63,13 +63,22 @@ export default function SiteFooter() {
             {/* Top tier: About the BSB */}
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 dark:border-white/10 dark:bg-white/5">
               <h3 className="mb-1 text-sm font-semibold uppercase tracking-wider opacity-90">About the Site</h3>
-              <p className="text-sm opacity-85">
-                This Bible reading app is presented without advertisements, freely given to all users in perpetuity. 
-                See <a href="https://thedoreanprinciple.org" target="_blank" className="underline">The Dorean Principle</a> for more information.
-              </p>
-              <p className="text-sm opacity-85 py-2">
-                If ReadBSB has blessed you, please consider helping keep the lights on by freely giving your support <a href="https://paypal.me/ryandcornett" target="_blank" rel="noopener noreferrer" className="underline">here</a>.
-              </p>
+              
+              <div className="md:flex gap-4 items-center justify-between">
+                <p className="text-sm opacity-85">
+                  This Bible reading app is presented without advertisements, freely given to all users in perpetuity. 
+                  See <a href="https://thedoreanprinciple.org" target="_blank" rel="noreferrer noopener" className="underline">The Dorean Principle</a> for more information.
+                </p>
+                <a href="https://ko-fi.com/ryancornett" target="_blank" rel="noreferrer noopener">
+                  <button
+                    type="button"
+                    className="rounded-xl bg-primary-400 hover:bg-primary-500 px-3 py-2 text-sm font-medium text-white shadow hover:bg-primary-500 transition-colors duration-200
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40
+                  disabled:opacity-50 cursor-pointer sm:mt-0 mt-2"
+                  >Support the Site
+                  </button>
+                </a>
+              </div>
             </div>
           </div>
         </div>

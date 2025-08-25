@@ -1,5 +1,6 @@
 import React from "react";
 import SettingsFontButton from "../components/SettingsFontButton";
+import SlIcon from "@shoelace-style/shoelace/dist/react/icon/index.js";
 
 type HeaderProps = {
   onToggleAudio?: () => void;
@@ -45,7 +46,7 @@ export default function Header({
             onClick={onToggleNotes}
           />
 
-          <IconButton label="Audio" name="volume-up-fill" onClick={onToggleAudio} />
+          <IconButton label="Audio" name="headphones" onClick={onToggleAudio} />
           <IconButton label="Share" name="share-fill" onClick={onShare} />
           <button
             type="button"
@@ -56,9 +57,9 @@ export default function Header({
                       dark:hover:bg-white/10 cursor-pointer transition-all duration-200 cursor-pointer"
           >
             {/* Show moon in light mode */}
-            <sl-icon name="moon-fill" class="block dark:hidden"></sl-icon>
+            <SlIcon name="sun-fill" className="block dark:hidden" />
             {/* Show sun (or lightbulb-fill) in dark mode */}
-            <sl-icon name="sun-fill" class="hidden dark:block"></sl-icon>
+            <SlIcon name="moon-fill" className="hidden dark:block" />
           </button>
         </nav>
 
@@ -81,7 +82,7 @@ function IconButton({
   className = ""
 }: {
   label: string;
-  name: string; // sl-icon name
+  name: string;
   onClick?: () => void;
   className?: string;
 }) {
@@ -93,7 +94,7 @@ function IconButton({
       title={label}
       onClick={onClick}
     >
-      <sl-icon name={name}></sl-icon>
+      <SlIcon name={name}/ >
     </button>
   );
 }

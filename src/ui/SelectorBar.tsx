@@ -6,7 +6,6 @@ export type Book = {
   abbr?: string;       // optional short label (e.g., "Gen")
 };
 
-export type Version = { id: string; label: string };
 
 export type ReferenceValue = {
   bookId: string;

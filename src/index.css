@@ -66,6 +66,14 @@ html, body, #root { height: 100%; }
     font-size: 2.25rem;
 }
 
+.custom .fb-s1 {
+    color: #222;
+    font-size: 1.15rem !important;
+}
+:root.dark .custom .fb-s1 {
+    color: #fff;
+}
+
 /* When notes are off, hide fetch.bible note markers anywhere inside the reader */
 html.notes-off .fetch-bible .fb-note {
   display: none !important;
@@ -77,3 +85,17 @@ html.notes-off .fetch-bible [data-footnote] {
   display: none !important;
 }
 
+/* Target just your audio via the class we added */
+audio.hide-native-time-and-menu::-webkit-media-controls-current-time-display,
+audio.hide-native-time-and-menu::-webkit-media-controls-time-remaining-display,
+audio.hide-native-time-and-menu::-webkit-media-controls-overflow-button {
+  display: none !important;
+}
+
+/* Optional: if you also want to hide the download/cast/PiP buttons in Chromium */
+/* controlsList removes a lot already, but this is a belt-and-suspenders approach */
+audio.hide-native-time-and-menu::-webkit-media-controls-download-button,
+audio.hide-native-time-and-menu::-webkit-media-controls-pip-button,
+audio.hide-native-time-and-menu::-webkit-media-controls-cast-button {
+  display: none !important;
+}

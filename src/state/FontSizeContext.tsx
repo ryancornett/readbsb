@@ -1,11 +1,11 @@
 // src/state/FontSizeContext.tsx
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-export type FontSize = "xs" | "sm" | "base" | "lg" | "xl" | "xxl";
+export type FontSize = "xs" | "sm" | "reg" | "lg" | "xl" | "xxl";
 const TEXT_MAP: Record<FontSize, string> = {
   xs: "text-size-xs",
   sm: "text-size-sm",
-  base: "text-size-base",
+  reg: "text-size-base",
   lg: "text-size-lg",
   xl: "text-size-xl",
   xxl: "text-size-xxl"
@@ -14,7 +14,7 @@ type Ctx = { size: FontSize; setSize: (s: FontSize) => void; cycle: () => void; 
 
 const FontSizeContext = createContext<Ctx | null>(null);
 
-const ORDER: FontSize[] = ["xs", "sm", "base", "lg", "xl", "xxl"];
+const ORDER: FontSize[] = ["xs", "sm", "reg", "lg", "xl", "xxl"];
 
 const KEY = "bsb:fontSize";
 
@@ -22,10 +22,10 @@ function getInitial(): FontSize {
   try {
     if (typeof window !== "undefined") {
       const saved = window.localStorage.getItem(KEY);
-      if (saved === "xs" || saved === "sm" || saved === "base" || saved === "lg" || saved === "xl" || saved === "xxl") return saved;
+      if (saved === "xs" || saved === "sm" || saved === "reg" || saved === "lg" || saved === "xl" || saved === "xxl") return saved;
     }
   } catch {}
-  return "base";
+  return "reg";
 }
 
 export const FontSizeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

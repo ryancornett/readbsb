@@ -9,7 +9,7 @@ import { useFontSize } from "../state/FontSizeContext";
 import Footer from "./Footer";
 import { scrollToBible, getHeaderOffsetPx } from "../services/scrollToBible";
 import AudioPanel from "../components/AudioPanel";
-
+import SlIcon from "@shoelace-style/shoelace/dist/react/icon/index.js";
 
 
 export default function AppShell() {
@@ -227,7 +227,7 @@ function getNextRef(
         title="Toggle inline notes"
         className="rounded p-2 hover:bg-black/5 focus:outline-none focus:ring-1 focus:ring-gray-500 dark:hover:bg-white/10"
       >
-        <sl-icon name={notesOn ? "eye" : "eye-slash"}></sl-icon>
+        <SlIcon name={notesOn ? "eye" : "eye-slash"} />
       </button>
     </div>
 
@@ -241,7 +241,7 @@ function getNextRef(
         aria-label="Audio"
         title="Audio"
       >
-        <sl-icon name="volume-up-fill"></sl-icon>
+        <SlIcon name="headphones"/>
       </button>
     </div>
 
@@ -255,7 +255,7 @@ function getNextRef(
         aria-label="Share"
         title="Share"
       >
-        <sl-icon name="share-fill"></sl-icon>
+        <SlIcon name="share-fill" />
       </button>
     </div>
 
@@ -269,8 +269,8 @@ function getNextRef(
         aria-label="Toggle theme"
         title="Toggle theme"
       >
-        <sl-icon name="moon-fill" class="block dark:hidden"></sl-icon>
-        <sl-icon name="sun-fill" class="hidden dark:block"></sl-icon>
+        <SlIcon name="sun-fill" className="block dark:hidden" />
+        <SlIcon name="moon-fill" className="hidden dark:block" />
       </button>
     </div>
   </div>
@@ -305,7 +305,7 @@ function getNextRef(
               }}}
             disabled={!canGoPrev}
           >
-            <sl-icon name="chevron-left" class="text-2xl"></sl-icon>
+            <SlIcon name="chevron-left" className="text-2xl" />
           </button>
 
           {/* Next arrow */}
@@ -319,7 +319,7 @@ function getNextRef(
               }}}
             disabled={!canGoNext}
           >
-            <sl-icon name="chevron-right" class="text-2xl"></sl-icon>
+            <SlIcon name="chevron-right" className="text-2xl" />
           </button>
 
 
@@ -330,7 +330,7 @@ function getNextRef(
             className="fixed hidden sm:block bottom-16 right-3 rounded-full bg-primary-400 hover:bg-primary-500 p-2 text-white shadow sm:bottom-6 transition-all duration-300 ease-out motion-reduce:transition-none hover:-translate-y-0.5 hover:shadow-md active:scale-95 cursor-pointer z-1000"
             aria-label="Back to top"
           >
-            <sl-icon name="arrow-up"></sl-icon>
+            <SlIcon name="arrow-up"></SlIcon>
           </button>
 
           {/* Bible text container */}
