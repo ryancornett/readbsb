@@ -1,15 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-/**
- * Minimal audio player wrapper with:
- * - Plain-text speed toggle that cycles: 1.00x → 1.25x → 1.50x → 1.75x → 2.00x → 0.50x → 0.75x → 1.00x
- * - Persists preferred speed in localStorage across chapter/file changes
- * - Time display shows ELAPSED(at current speed) / TOTAL(at current speed)
- *   so elapsed never exceeds total, and both reflect wall-clock time at the chosen rate.
- * - UI ticker updates strictly every 1000ms (no faster), regardless of playbackRate.
- * - Tailwind-friendly markup (no external UI deps)
- */
-
 type AudioPlayerProps = {
   src: string;
   title?: string;
@@ -17,6 +7,10 @@ type AudioPlayerProps = {
   autoPlay?: boolean;
   /** If provided, called when the <audio> element mounts so parent can add listeners, etc. */
   onAudioRef?: (el: HTMLAudioElement | null) => void;
+};
+
+const handleAudioEnded = () => {
+  document.getElementById("next-chapter-arrow")?.click();
 };
 
 const SPEEDS: number[] = [1.0, 1.25, 1.5, 1.75, 2.0, 0.5, 0.75];
@@ -40,7 +34,7 @@ function nextSpeed(current: number): number {
   return SPEEDS[(idx + 1) % SPEEDS.length];
 }
 
-export default function AudioPlayer({ src, title, className = "", autoPlay = false, onAudioRef }: AudioPlayerProps) {
+export default function AudioPlayer({ src, title, className = "", autoPlay = true, onAudioRef }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playbackRate, setPlaybackRate] = useState<number>(() => {
     const fromLS = Number(localStorage.getItem(LS_KEY));
@@ -128,6 +122,7 @@ export default function AudioPlayer({ src, title, className = "", autoPlay = fal
   return (
     <div className={`w-full flex flex-col gap-2 ${className}`}>
       <audio
+        onEnded={handleAudioEnded}
         ref={audioRef}
         src={src}
         preload="metadata"

@@ -1,19 +1,5 @@
 import React from "react";
 
-/**
- * SiteFooter
- * ---------------------------------
- * Tall, dark footer with 3 columns on desktop, stacked on mobile.
- * Left (1/3): large logo + brand text.
- * Middle (1/3): "Information" links.
- * Right (1/3): "More Resources" links.
- * Full-width under the two lists: two-tier section with:
- *   - Top: About the BSB text
- *   - Bottom: Other projects links + Donate button
- *
- * Replace the placeholder links/text below with your real content.
- */
-
 type LinkItem = { label: string; href: string; newTab?: boolean };
 
 const INFORMATION_LINKS: LinkItem[] = [

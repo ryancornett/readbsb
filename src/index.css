@@ -99,3 +99,7 @@ audio.hide-native-time-and-menu::-webkit-media-controls-pip-button,
 audio.hide-native-time-and-menu::-webkit-media-controls-cast-button {
   display: none !important;
 }
+
+@media screen and (max-width: 785px) {
+  .fb-note { display: none; }
+}

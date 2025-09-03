@@ -29,16 +29,13 @@ export default function AudioPanel({ open, onClose, bookId, chapter, bookLabel }
 
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
-    const onEnded = () => setIsPlaying(false);
 
     el.addEventListener("play", onPlay);
     el.addEventListener("pause", onPause);
-    el.addEventListener("ended", onEnded);
 
     return () => {
       el.removeEventListener("play", onPlay);
       el.removeEventListener("pause", onPause);
-      el.removeEventListener("ended", onEnded);
     };
   }, [src]); // rebind on chapter change
 
@@ -87,7 +84,7 @@ export default function AudioPanel({ open, onClose, bookId, chapter, bookLabel }
             <AudioPlayer
               src={src}
               title={`${bookLabel || bookId?.toUpperCase() || ""} ${chapter}`}
-              autoPlay={false /* resume handled by isPlaying effect above */}
+              autoPlay={true}
               onAudioRef={(el) => { audioRef.current = el; }}
             />
           </div>

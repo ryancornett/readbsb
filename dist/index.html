@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/assets/favicon-T8xRGlOO.ico">
+    <link rel="preconnect" href="https://github.com/ryancornett/Bible_Audio/tree/main/BSB" crossorigin>
+    <meta name="description" content="Read the Berean Standard Bible with notes, audio, and zero distractions." />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="index.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/light.css" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/shoelace-autoloader.js"></script>
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('theme') || 'system';
+          var mql = window.matchMedia('(prefers-color-scheme: dark)');
+          var dark = pref === 'dark' || (pref === 'system' && mql.matches);
+          document.documentElement.classList[dark ? 'add' : 'remove']('dark');
+        } catch (_) {}
+      })();
+    </script>
+
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#111827" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <meta property="og:image" content="/icons/icon-512.png">
+    <meta name="twitter:image" content="/icons/icon-512.png">
+
+    <title>Read the Berean Standard Bible</title>
+    <script type="module" crossorigin src="/assets/index-B4C56SJc.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CUXJNe-w.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

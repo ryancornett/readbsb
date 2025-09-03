@@ -11,7 +11,6 @@ import { scrollToBible, getHeaderOffsetPx } from "../services/scrollToBible";
 import AudioPanel from "../components/AudioPanel";
 import SlIcon from "@shoelace-style/shoelace/dist/react/icon/index.js";
 
-
 export default function AppShell() {
   const [audioOpen, setAudioOpen] = useState(false);
   const { textClass } = useFontSize();
@@ -28,7 +27,6 @@ const handleToggleNotes = useCallback(() => {
     // reflect state to the DOM root
     document.documentElement.classList.toggle("notes-off", !notesOn);
   }, [notesOn]);
-
 
 const handleToggleAudio = useCallback(() => setAudioOpen(o => !o), []);
 const handleShare = useCallback(() => {
@@ -187,10 +185,6 @@ function getNextRef(
 
 
 
-
-
-
-
   return (
     <div className="min-h-dvh flex flex-col bg-white text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
       <Header
@@ -216,19 +210,6 @@ function getNextRef(
       <span className="text-sm">Font size</span>
       {/* Adjust import path if needed */}
       <SettingsFontButton />
-    </div>
-
-    <div className="flex items-center justify-between py-2">
-      <span className="text-sm">Inline notes</span>
-      <button
-        type="button"
-        onClick={() => { handleToggleNotes(); }}
-        aria-label="Toggle inline notes"
-        title="Toggle inline notes"
-        className="rounded p-2 hover:bg-black/5 focus:outline-none focus:ring-1 focus:ring-gray-500 dark:hover:bg-white/10"
-      >
-        <SlIcon name={notesOn ? "eye" : "eye-slash"} />
-      </button>
     </div>
 
     {/* Audio */}
@@ -372,3 +353,4 @@ function getNextRef(
     </div>
   );
 }
+
