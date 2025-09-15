@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import '@gracious.tech/fetch-client/client.css';
 import { FontSizeProvider } from "./state/FontSizeContext";
+import { NuqsAdapter } from 'nuqs/adapters/react';
 
 // Shoelace (icons)
 import "@shoelace-style/shoelace/dist/themes/light.css";
@@ -17,10 +18,12 @@ setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/dist/"
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <FontSizeProvider>
-        <AppShell />
-      </FontSizeProvider>
-    </ThemeProvider>
+    <NuqsAdapter>
+      <ThemeProvider>
+        <FontSizeProvider>
+          <AppShell />
+        </FontSizeProvider>
+      </ThemeProvider>
+    </NuqsAdapter>
   </React.StrictMode>
 );
