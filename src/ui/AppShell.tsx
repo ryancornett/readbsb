@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Header from "./Header";
 import MobileTopDrawer from "./MobileTopDrawer";
 import SelectorBar, { type ReferenceValue, type Book as UIBook } from "./SelectorBar";
@@ -10,6 +10,7 @@ import Footer from "./Footer";
 import { scrollToBible, getHeaderOffsetPx } from "../services/scrollToBible";
 import AudioPanel from "../components/AudioPanel";
 import SlIcon from "@shoelace-style/shoelace/dist/react/icon/index.js";
+import { useQueryState, parseAsInteger } from "nuqs";
 
 export default function AppShell() {
   const [audioOpen, setAudioOpen] = useState(false);
@@ -39,20 +40,18 @@ const handleToggleTheme = useCallback(() => {
   localStorage.setItem("theme", html.classList.contains("dark") ? "dark" : "light");
 }, []);
 
-  const [current, setCurrent] = useState<ReferenceValue>({
-    bookId: "",
-    chapter: 1,
-  });
+  const [bookId, setBookId] = useQueryState('bookId');
+  const [chapter, setChapter] = useQueryState('chapter', parseAsInteger.withDefault(1));
   const [html, setHtml] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const activeBook = React.useMemo(() => {
-    const id = (current.bookId || "").toUpperCase();
+    const id = (bookId || "").toUpperCase();
     return books.find(b => b.id.toUpperCase() === id) || null;
-  }, [books, current.bookId]);
+  }, [books, bookId]);
 
-  const bookLabel = activeBook?.name ?? activeBook?.abbr ?? (current.bookId || "").toUpperCase();
+  const bookLabel = activeBook?.name ?? activeBook?.abbr ?? (bookId || "").toUpperCase();
 
 
   // Load book metadata on mount
@@ -67,7 +66,9 @@ const handleToggleTheme = useCallback(() => {
         setBooks(uiBooks);
         // Default to John if present; otherwise first book
         const first = uiBooks.find(x => x.name === "John") ?? uiBooks[0];
-        setCurrent(c => ({ ...c, bookId: c.bookId || first.id, chapter: c.chapter || 1 }));
+        if (!bookId && first) {
+          setBookId(first.id);
+        }
       } catch (e: any) {
         setErr(e?.message ?? "Failed to load books");
       }
@@ -75,18 +76,18 @@ const handleToggleTheme = useCallback(() => {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [bookId, setBookId]);
 
   // Load chapter HTML whenever selection changes
   useEffect(() => {
-    if (!current.bookId) return;
+    if (!bookId) return;
     const ctrl = new AbortController();
     setLoading(true);
     setErr(null);
 
     (async () => {
       try {
-        const html = await fetchChapterHtml(current.bookId, current.chapter);
+        const html = await fetchChapterHtml(bookId, chapter);
         if (!ctrl.signal.aborted) setHtml(html);
       } catch (e: any) {
         if (!ctrl.signal.aborted) setErr(e?.message ?? "Failed to load chapter");
@@ -96,9 +97,15 @@ const handleToggleTheme = useCallback(() => {
     })();
 
     return () => ctrl.abort();
-  }, [current.bookId, current.chapter]);
+  }, [bookId, chapter]);
 
 const getChapterNumbers = (bookId: string) => get_chapters(bookId);
+
+// Create current reference object for navigation functions
+const current = useMemo(() => ({
+  bookId: bookId || "",
+  chapter: chapter
+}), [bookId, chapter]);
 
 const prevCandidate = getPrevRef(current, books, getChapterNumbers, true);
 const nextCandidate = getNextRef(current, books, getChapterNumbers, true);
@@ -264,8 +271,14 @@ function getNextRef(
   <SelectorBar
     books={books}
     value={current}
-    onChange={setCurrent}
-    onJump={setCurrent}
+    onChange={(newRef) => {
+      setBookId(newRef.bookId);
+      setChapter(newRef.chapter);
+    }}
+    onJump={(newRef) => {
+      setBookId(newRef.bookId);
+      setChapter(newRef.chapter);
+    }}
     getChapterNumbers={getChapterNumbers}
     showVersion={false}
     className="sticky top-0 z-20"
@@ -281,8 +294,9 @@ function getNextRef(
             aria-label="Previous chapter"
             onClick={() => {
               if (prevCandidate) {
-              setCurrent(prevCandidate);
-              scrollToBible(getHeaderOffsetPx());
+                setBookId(prevCandidate.bookId);
+                setChapter(prevCandidate.chapter);
+                scrollToBible(getHeaderOffsetPx());
               }}}
             disabled={!canGoPrev}
           >
@@ -295,7 +309,8 @@ function getNextRef(
             className="group fixed right-2 top-5/7 sm:top-1/2 -translate-y-1/2 rounded-full bg-white/85 p-2 shadow hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed dark:bg-zinc-800/85 dark:hover:bg-zinc-800 sm:block transition-all duration-200 ease-out motion-reduce:transition-none hover:translate-x-0.5 hover:shadow-md cursor-pointer"
             aria-label="Next chapter"
             onClick={() => { if (nextCandidate) {
-              setCurrent(nextCandidate);
+              setBookId(nextCandidate.bookId);
+              setChapter(nextCandidate.chapter);
               scrollToBible(getHeaderOffsetPx());
               }}}
             disabled={!canGoNext}
@@ -344,8 +359,8 @@ function getNextRef(
     <AudioPanel
       open={audioOpen}
       onClose={() => setAudioOpen(false)}
-      bookId={current.bookId}
-      chapter={current.chapter}
+      bookId={bookId || ""}
+      chapter={chapter}
       bookLabel={bookLabel}
     />
 
